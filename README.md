@@ -12,4 +12,3 @@ The ContentMine app lets you perform all the steps in the ContentMine workflow:
 - extract facts from the documents you've scraped by using the remote ContentMine fact extraction service, getting back a dataset.
 
 This app is being scaffolded in preparation for the Mozilla Sprint.
--
