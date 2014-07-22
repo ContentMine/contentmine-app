@@ -5,9 +5,9 @@
   "single-instance": true,
   "window": {
     "title": "contentminer",
-    "width": 650,
+    "width": 800,
     "height": 650,
-    "min_width": 650,
+    "min_width": 800,
     "min_height": 650,
     "toolbar": false
   },
