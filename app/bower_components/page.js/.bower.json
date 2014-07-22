@@ -1,0 +1,14 @@
+{
+  "name": "page.js",
+  "homepage": "https://github.com/visionmedia/page.js",
+  "version": "1.3.7",
+  "_release": "1.3.7",
+  "_resolution": {
+    "type": "version",
+    "tag": "1.3.7",
+    "commit": "4611cfc4e5304f70ac64e2f61f676c27c863fa11"
+  },
+  "_source": "git://github.com/visionmedia/page.js.git",
+  "_target": "1.3.7",
+  "_originalSource": "page.js"
+}
