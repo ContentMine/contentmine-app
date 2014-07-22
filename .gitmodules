@@ -1,0 +1,3 @@
+[submodule "app/scrapers"]
+	path = app/scrapers
+	url = git@github.com:ContentMine/journal-scrapers.git
