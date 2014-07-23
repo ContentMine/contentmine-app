@@ -129,7 +129,7 @@ routes.scraper.onload = function () {
                     if (scraperBox.url2dir.hasOwnProperty(url)) {
                         $("<li><a></a></li>")
                             .find("a")
-                                .attr({ href: "documents", dataDir: scraperBox.url2dir[url] })
+                                .attr({ href: "documents", "data-dir": scraperBox.url2dir[url] })
                                 .addClass("navigate")
                                 .text(url)
                             .end()
@@ -153,14 +153,32 @@ routes.scraper.onload = function () {
     });
 };
 
+// the documents UI
+routes.documents.onload = function (data) {
+    // listing a specific document, with the directory provided
+    if (data.dir) {
+        
+    }
+    // listing all docs
+    else {
+        
+    }
+};
+
+
 // routing - let's get this party started!
 $(function () {
     $app = $("#app");
     $("body").on("click", "a.navigate", function (ev) {
         var $a = $(ev.currentTarget)
         ,   href = $a.attr("href")
-        ,   data = ev.currentTarget.dataSet || {}
+        ,   data = {}
         ;
+        // for some reason data set does not seem to work
+        for (var i = 0, n = ev.currentTarget.attributes.length; i < n; i++) {
+            var attr = ev.currentTarget.attributes.item(i);
+            if (/^data-/.test(attr.name)) data[attr.name.replace("data-", "")] = attr.value;
+        }
         ev.preventDefault();
         navigate(href, data);
     });
