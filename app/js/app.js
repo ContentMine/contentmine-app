@@ -30,11 +30,13 @@ function navigate (route, data, $link) {
 
 // the scraper UI
 routes.scraper.onload = function () {
+    // put the scrapers in the form
     scrapers.listScrapers(function (err, names) {
         // XXX need a friendly alert dialog instead
         if (err) return alert(err);
         var $scraperSel = $("#scraper");
         $scraperSel.empty();
+        $("<option value='*'>All</option>").appendTo($scraperSel);
         $.each(names, function (i, n) {
             $("<option></option>")
                 .attr("value", n)
@@ -42,6 +44,25 @@ routes.scraper.onload = function () {
                 .appendTo($scraperSel)
             ;
         });
+    });
+    
+    // handle submissions
+    $("#scraper-form").submit(function (ev) {
+        ev.preventDefault();
+        var data = {
+                urls:       $("#inputURLs")
+                                .val()
+                                .split("\n")
+                                .filter(function (url) {
+                                    return /^http/i.test(url);
+                                })
+            ,   scraper:    $("#scraper").val()
+            ,   rate:       $("#rate").val() || 3
+            ,   dataDir:    require("nw.gui").App.dataPath
+            }
+        ,   scraperBox = scrapers.getScraperBox(data)
+        ;
+        scraperBox.run();
     });
 };
 
