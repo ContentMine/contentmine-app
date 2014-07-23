@@ -46,9 +46,21 @@ routes.scraper.onload = function () {
         });
     });
     
+    // form state toggling
+    var $submit = $("#submit")
+    ,   $cancel = $("#cancel")
+    ;
+    
+    function reactivateForm () {
+        $cancel.attr("disabled", "disabled");
+        $submit.removeAttr("disabled");
+    }
+
     // handle submissions
     $("#scraper-form").submit(function (ev) {
         ev.preventDefault();
+        $submit.attr("disabled", "disabled");
+        $cancel.removeAttr("disabled");
         var data = {
                 urls:       $("#inputURLs")
                                 .val()
@@ -61,7 +73,67 @@ routes.scraper.onload = function () {
             ,   dataDir:    require("nw.gui").App.dataPath
             }
         ,   scraperBox = scrapers.getScraperBox(data)
+        ,   finished = 0
+        ,   total = data.urls.length
         ;
+        var $log = $("#log")
+        ,   $ul = $log.find("ul")
+        ,   addLine = function (level, msg) {
+                return $("<li></li>").addClass("text-" + level).text(msg).prependTo($ul);
+            }
+        ;
+        $ul.empty();
+        $log.show();
+        addLine("info", "Running scrape...");
+        
+        scraperBox.on("scrapersLoaded", function (num) { addLine("info", "Loaded " + num + " scrapers"); });
+        scraperBox.on("gettingScraper", function (url) { addLine("info", "Getting scraper for " + url); });
+        scraperBox.on("scraperFound", function () { addLine("info", "Found scraper"); });
+        scraperBox.on("scrapeStart", function () { addLine("info", "Starting to scrape"); });
+        scraperBox.on("pageRendered", function () { addLine("info", "Rendered HTML page"); });
+        scraperBox.on("pageDownload", function () { addLine("info", "Downloaded HTML page"); });
+        scraperBox.on("elementCaptured", function (data) {
+            var info = Object.keys(data).join(", ");
+            addLine("info", "Captured information: " + info);
+        });
+        scraperBox.on("scrapeScraperJSONResults", function () { addLine("info", "Generated JSON results"); });
+        scraperBox.on("scrapeHtmlResults", function () { addLine("info", "Generated HTML results"); });
+        scraperBox.on("scrapeResults", function () { addLine("info", "Results completed"); });
+        scraperBox.on("downloadCompleted", function (url) { addLine("info", "Downloaded " + url); });
+        scraperBox.on("end", function () {
+            finished++;
+            var $sucLI = addLine("success", "Success! (" + finished + "/" + total + ")");
+            if (finished === total) {
+                reactivateForm();
+                var $docsUL = $("<ul></ul>");
+                for (var url in scraperBox.url2dir) {
+                    if (scraperBox.url2dir.hasOwnProperty(url)) {
+                        $("<li><a></a></li>")
+                            .find("a")
+                                .attr({ href: "documents", dataDir: scraperBox.url2dir[url] })
+                                .addClass("navigate")
+                                .text(url)
+                            .end()
+                            .appendTo($docsUL)
+                        ;
+                    }
+                }
+                $sucLI.append($docsUL);
+            }
+            // XXX
+            //  show success dialog?
+        });
+        // in sickness and in health
+        scraperBox.on("error", function (err) {
+            addLine("danger", "ERROR: " + err);
+            reactivateForm();
+            // XXX
+            //  need an error dialog
+        });
+        scraperBox.on("warn", function (warn) { addLine("warning", "WARNING: " + warn); });
+        scraperBox.on("elementCaptureFailed", function (def) { addLine("warning", "Failed to capture data element: " + JSON.stringify(def, null, 1)); });
+        scraperBox.on("downloadError", function (err) { addLine("warning", "Failed to download content: " + err); });
+        
         scraperBox.run();
     });
 };
