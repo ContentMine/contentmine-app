@@ -74,7 +74,6 @@ routes.scraper.onload = function () {
 
     // handle submissions
     $("#scraper-form").submit(function (ev) {
-        error("The horror, the horror!");
         ev.preventDefault();
         $submit.attr("disabled", "disabled");
         $cancel.removeAttr("disabled");
