@@ -12,11 +12,12 @@
         </div>
         <div class="col-sm-6">
           <label for="rate">Rate limit</label>
-          <input type="number" id="rate" class="form-control" value="3">
+          <input type="number" id="rate" class="form-control" value="3" min="0">
         </div>
       </div>
       <button type="submit" class="btn btn-success" id="submit">Submit</button>
       <button type="button" class="btn btn-danger" id="cancel" disabled>Cancel</button>
+      <span id="running" style="display: none;"><img src="../img/running.gif" width="24" height="24"></span>
     </form>
     <div id="log" style="display: none;" class="well">
       <h3>Processing log</h3>
