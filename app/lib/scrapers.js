@@ -18,7 +18,7 @@ exports.listScrapers = function (cb) {
 // produce a properly configued ScraperBox
 exports.getScraperBox = function (data) {
     var SB = new ScraperBox(data.scraper === "*" ? scraperDir : null);
-    if (data.scraper !== "*") SB.addScraper(pth.join(scraperDir, data.scraper + ".json"));
+    if (data.scraper !== "*") SB.addScraper(pth.join(scraperDir, data.scraper));
     return {
         sb:         SB
     ,   urls:       data.urls
