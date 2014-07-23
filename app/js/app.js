@@ -2,6 +2,8 @@
 var scrapers = require("../lib/scrapers")
 ,   fs = require("fs")
 ,   pth = require("path")
+,   gui = require("nw.gui")
+,   dataDir = gui.App.dataPath
 ,   $app
 ,   routes = {
         scraper:        {}
@@ -87,7 +89,7 @@ routes.scraper.onload = function () {
                                 })
             ,   scraper:    $("#scraper").val()
             ,   rate:       $("#rate").val() || 3
-            ,   dataDir:    require("nw.gui").App.dataPath
+            ,   dataDir:    dataDir
             }
         ,   scraperBox = scrapers.getScraperBox(data)
         ,   finished = 0
@@ -155,13 +157,47 @@ routes.scraper.onload = function () {
 
 // the documents UI
 routes.documents.onload = function (data) {
+    var $list = $("#list")
+    ,   $doc = $("#doc")
+    ;
     // listing a specific document, with the directory provided
     if (data.dir) {
-        
+        $list.hide();
+        $doc.show();
+        // XXX this is ugliness itself, should fix it upstream
+        var steps = data.dir.split(pth.sep)
+        ,   last = steps[steps.length - 1] ? steps[steps.length - 1] : steps[steps.length - 2] 
+        ;
+        var doc = scrapers.getDocument(dataDir, last);
+        $doc.find("h2").text(doc.title);
     }
     // listing all docs
     else {
-        
+        $doc.hide();
+        $list.show();
+        var $tbody = $("table tbody");
+        $tbody.empty();
+        scrapers.listDocuments(dataDir, function (err, docs) {
+            if (err) return error(err);
+            $.each(docs, function (dir, doc) {
+                var $tr = $("<tr></tr>");
+                $("<td><a class='navigate'></a></td>")
+                    .find("a")
+                        .attr({ href: "documents", "data-dir": dir })
+                        .text(doc.title)
+                    .end()
+                    .appendTo($tr);
+                $("<td><a></a></td>")
+                    .find("a")
+                        .attr({ href: doc.fulltext_html || doc.fulltext_pdf })
+                        .text(doc.fulltext_html || doc.fulltext_pdf)
+                    .end()
+                    .appendTo($tr);
+                $("<td></td>").text(doc.journal).appendTo($tr);
+                $("<td nowrap></td>").text(doc.date).appendTo($tr);
+                $tbody.append($tr);
+            });
+        });
     }
 };
 
@@ -183,4 +219,9 @@ $(function () {
         navigate(href, data);
     });
     navigate("scraper", {});
+    // open a browser for external links
+    $("body").on("click", "a[href^='http']", function (ev) {
+        ev.preventDefault();
+        gui.Shell.openExternal($(ev.target).attr("href"));
+    });
 });

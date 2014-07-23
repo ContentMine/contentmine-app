@@ -1,10 +1,13 @@
 
 var fs = require("fs")
 ,   pth = require("path")
-,   scraperDir = pth.join(__dirname, "../scrapers/scrapers")
+,   util = require("util")
+,   jn = pth.join
+,   scraperDir = jn(__dirname, "../scrapers/scrapers")
 ,   thresher = require("thresher")
 ,   ScraperBox = thresher.scraperbox
 ,   Thresher = thresher.Thresher
+,   async = require("async")
 ;
 
 // returns a list of the available scrapers, including the .json
@@ -16,6 +19,48 @@ exports.listScrapers = function (cb) {
     });
 };
 
+// returns a list of the documents we have in storage
+exports.listDocuments = function (dataDir, cb) {
+    if (!cb) return;
+    var contentDir = jn(dataDir, "scrapes");
+    fs.readdir(contentDir, function (err, files) {
+        if (err) return cb(err);
+        var res = {};
+        async.each( files
+                ,   function (f, done) {
+                        fs.stat(jn(contentDir, f), function (err, stat) {
+                            if (err) return done(err);
+                            var jsonPath = jn(contentDir, f, "results.json");
+                            if (stat.isDirectory() && fs.existsSync(jsonPath)) {
+                                res[f] = exports.getDocument(dataDir, f);
+                            }
+                            done();
+                        });
+                    }
+                ,   function (err) {
+                        if (err) return cb(err);
+                        cb(null, res);
+                    }
+        );
+    });
+};
+
+// get the data for a specific document
+exports.getDocument = function (dataDir, doc) {
+    var arr = JSON.parse(fs.readFileSync(jn(dataDir, "scrapes", doc, "results.json"), "utf8"))
+    ,   res = {}
+    ;
+    arr.forEach(function (aspect) {
+        var k = Object.keys(aspect)[0];
+        if (res[k]) {
+            if (util.isArray(res[k])) res[k].push(aspect[k]);
+            else res[k] = [res[k], aspect[k]];
+        }
+        else res[k] = aspect[k];
+    });
+    return res;
+};
+
 // XXX
 //  much of the below would work better if it were possible to encapsulate the whole threshing
 //  inside a worker (since communication is through events, we can just use postMessage). Notably,
@@ -24,7 +69,7 @@ exports.listScrapers = function (cb) {
 // produce a properly configued ScraperBox
 exports.getScraperBox = function (data) {
     var SB = new ScraperBox(data.scraper === "*" ? scraperDir : null);
-    if (data.scraper !== "*") SB.addScraper(pth.join(scraperDir, data.scraper));
+    if (data.scraper !== "*") SB.addScraper(jn(scraperDir, data.scraper));
     var sbEvents = {
         scrapersLoaded: true
     ,   warn:           true
@@ -36,7 +81,7 @@ exports.getScraperBox = function (data) {
     ,   urls:       data.urls
     ,   rate:       data.rate
     ,   dataDir:    data.dataDir
-    ,   outputDir:  pth.join(data.dataDir, "scrapes")
+    ,   outputDir:  jn(data.dataDir, "scrapes")
     ,   owd:        null
     ,   listeners:  {}
     ,   url2dir:    {}
@@ -64,7 +109,7 @@ exports.getScraperBox = function (data) {
                 ,   def = self.sb.getScraper(url)
                 ;
                 try {
-                    var dir = pth.join(self.outputDir, url.replace(/\/+/g, '_').replace(/:/g, ''));
+                    var dir = jn(self.outputDir, url.replace(/\/+/g, '_').replace(/:/g, ''));
                     if (!fs.existsSync(dir)) fs.mkdirSync(dir);
                     process.chdir(dir);
                     var t = new Thresher();

@@ -17,7 +17,8 @@
     },
   
   "dependencies": {
-      "thresher":   "git://github.com/darobin/thresher#no-jsdom"
+      "thresher":   "git://github.com/darobin/thresher#no-jsdom",
+      "async":      "0.9.0"
   },
   "devDependencies": {
     "grunt": "~0.4.5",

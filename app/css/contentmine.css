@@ -43,3 +43,6 @@ body {
 #log ul li::before {
     content:    "—  ";
 }
+table.table {
+    background: #fff;
+}
