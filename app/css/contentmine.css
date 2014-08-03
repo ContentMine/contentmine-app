@@ -32,3 +32,17 @@ body {
 .navbar .nav > li.active > a {
     border-bottom:  3px solid #fff;
 }
+#log {
+    margin-top: 1em;
+}
+#log ul {
+    max-height: 12em;
+    overflow-y: auto;
+    list-style-type:    none;
+}
+#log ul li::before {
+    content:    "—  ";
+}
+table.table {
+    background: #fff;
+}

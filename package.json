@@ -16,7 +16,10 @@
       "url": "git://github.com/ContentMine/contentminer.git"
     },
   
-  "dependencies": {},
+  "dependencies": {
+      "thresher":   "0.0.9",
+      "async":      "0.9.0"
+  },
   "devDependencies": {
     "grunt": "~0.4.5",
     "grunt-contrib-concat": "~0.4.0",
